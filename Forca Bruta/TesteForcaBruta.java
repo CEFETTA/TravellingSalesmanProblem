@@ -5,26 +5,166 @@ public class TesteForcaBruta {
 
     public static void main(String[] args) {
 
-        // Gerador de numeros aleatorios
+        //Aqui instanciamos de maneira automatica
+        ForcaBruta forcaBrutaN[] = new ForcaBruta[15];
+
+        //Aqui instanciamos o forca bruta de acordo com o numero de cidades
+        for (int i = 0; i < 15; i++) {
+            forcaBrutaN[i] = new ForcaBruta(i);
+        }
+
+        //Aqui alteramos qual instancia queremos testar
+        int n = 13;
+
+        long inicio = System.currentTimeMillis();
+
+        //Aqui fazemos as chamadas dos algoritmos
+        forcaBrutaN[n].AlgoritmoForcaBruta();
+        forcaBrutaN[n].imprimeGrafo();
+        forcaBrutaN[n].imprimeMelhorRota();
+
+        long fim = System.currentTimeMillis();
+        
+        System.out.println("\nTempo em Ms: " + (fim - inicio));
+        System.out.println("");
+
+    }
+
+}
+
+//Aqui iremos ter uma classe que contem uma instancia que executara o 
+//algoritmo de forca bruta
+class ForcaBruta {
+
+    //Aqui temos o numero de cidades do algoritmo
+    private int numCidades;
+
+    //Aqui temos o grafo em questao representado por uma matriz de adjacencia
+    private int[][] grafo;
+    
+    //Aqui temos uma possivel rota
+    private int[] possivelRota;
+    
+    //Aqui temos a melhor rota encontrada
+    private int[] melhorRota;
+
+    //Aqui armazenamos quais ja foram explorados
+    private int[] cidadesExploradas;
+
+    //Aqui guardamos o nivel da busca em profundidade 
+    //se o nivel for igual ao numCidades, temos uma possivel rota
+    private int nivelDFS;
+
+    //Aqui guardamos o menor custo do caminho
+    private int menorCusto;
+
+    //Construtor onde inicializamos todas variaveis 
+    public ForcaBruta(int numCidades) {
+
+        this.numCidades = numCidades;
+        this.grafo = new int [numCidades][numCidades];
+        this.possivelRota = new int[numCidades];
+        this.cidadesExploradas = new int[numCidades];
+        this.melhorRota = new int[numCidades];
+        this.nivelDFS = 0;
+        this.menorCusto = Integer.MAX_VALUE;
+        
+        for (int i = 0; i < numCidades; i++) {
+            cidadesExploradas[i] = 0;
+        }
+        
+        preencheGrafo(grafo);
+
+    }
+    
+    //Apenas uma chamada
+    public void AlgoritmoForcaBruta(){
+        RealizaAlgoritmoforcaBruta(0, 0);
+    }
+    
+    //Aqui implementamos um algoritmo de busca em profundidade 
+    //para implementar a forca bruta onde todos os possiveis caminhos
+    //sao testados
+    private void RealizaAlgoritmoforcaBruta(int verticeInicial, int nivelDFS) {
+        
+        int custoCiclo;
+        cidadesExploradas[verticeInicial] = 1;
+        possivelRota[nivelDFS] = verticeInicial;
+        
+        //Aqui terminamos uma possivel rota, iremos testa-la
+        if (nivelDFS == (numCidades - 1)) {
+            custoCiclo = verificaCustoCiclo(possivelRota);
+            if (custoCiclo < menorCusto) {
+                menorCusto = custoCiclo;
+                for (int j = 0; j < numCidades; j++) {
+                    melhorRota[j] = possivelRota[j];
+                }
+            }
+        }
+        
+        //Aqui chamamos de maneira recursiva o algoritmo
+        //aumentamos o nivel de DFS e possibilitamos uma cidade ser 
+        //explorada novamente
+        for (int i = 0; i < numCidades; i++) {
+            if (cidadesExploradas[i] != 1) {
+                RealizaAlgoritmoforcaBruta(i, nivelDFS + 1);
+                cidadesExploradas[i] = 0;
+            }
+        }
+        
+    }
+    
+    //Aqui medimos o custo de um ciclo qualquer
+    //o vetor rota ciclo armazena os indices das cidades em questao
+    //que formam uma possivel rota
+    private int verificaCustoCiclo(int[] rotaCiclo) {
+        int custoCiclo = 0;
+
+        for (int i = 0; i < numCidades - 1; i++) {
+            custoCiclo = custoCiclo + grafo[rotaCiclo[i]][rotaCiclo[i + 1]];
+        }
+        custoCiclo = custoCiclo + grafo[rotaCiclo[numCidades - 1]][rotaCiclo[0]];
+
+        return custoCiclo;
+    }
+
+    //Aqui imprimimos o melhor caminho obtido
+    public void imprimeMelhorRota() {
+        System.out.print("Melhor Rota: ");
+        for (int i = 0; i < numCidades; i++) {
+            if (i > 0) {
+                System.out.print("-");
+            }
+            System.out.print(melhorRota[i]);
+        }
+        System.out.println("-0");
+    }
+    
+    //Aqui imprimimos o grafo para fins de visualizacao
+    public void imprimeGrafo(){
+        System.out.println("Cidades e custos:");
+        for (int i = 0; i < numCidades; i++) {
+            System.out.print("  " + i);
+        }
+        System.out.println();
+        for (int i = 0; i < numCidades; i++) {
+            System.out.print("" + i);
+            for (int j = 0; j < numCidades; j++) {
+                System.out.print(" " + grafo[i][j]);
+            }
+            System.out.println("\n");
+        }
+    }
+    
+    
+    //Aqui preenchemos um grafo passado como parametro
+    public void preencheGrafo(int [][] grafo) {
+
+        //Gerador de numeros aleatorios
         Random gerador = new Random();
 
-        // Aqui teremos um vetor com uma possivel rota de viagem
-        int[] possivelRota;
-
-        // Aqui teremos um vetor com a melhor rota de viagem
-        Rota[] melhorRota;
-
-        // Aqui teremos o numero de cidades do grafo
-        int numCidades = gerador.nextInt(14);
-
-        // Aqui teremos o melhor custo da viagem
-        int melhorCusto = 0;
-
-        // Aqui teremos uma matriz de adjacencia com o grafo aleatorio
-        int[][] grafo = new int[numCidades][numCidades];
         int pesoGrafo;
 
-        // Aqui preenchemos o grafo
         for (int i = 0; i < numCidades; i++) {
             for (int j = 0; j < numCidades; j++) {
                 pesoGrafo = gerador.nextInt(60);
@@ -37,154 +177,6 @@ public class TesteForcaBruta {
                 }
             }
         }
-
-        // Aqui printamos o grafo criado para fins de visualizacao
-        System.out.println("Cidades e custos:\n");
-        for (int i = 0; i < numCidades; i++) {
-            System.out.print("  " + i);
-        }
-        System.out.println();
-        for (int i = 0; i < numCidades; i++) {
-            System.out.print("" + i);
-            for (int j = 0; j < numCidades; j++) {
-                System.out.print(" " + grafo[i][j]);
-            }
-            System.out.println("\n");
-        }
-
-        // aqui apenas instanciamos
-        possivelRota = new int[numCidades];
-        melhorRota = new Rota[numCidades];
-
-        // aqui instanciamos a implementacao
-        ForcaBruta algoritmoForcaBruta = new ForcaBruta();
-
-        // aqui fazemos as chamadas
-        algoritmoForcaBruta.forcaBruta(possivelRota, grafo, melhorRota, melhorCusto);
-        algoritmoForcaBruta.imprimeCaminho(melhorRota);
-
     }
-
-}
-
-// Aqui iremos ter algoritmos para implementar a forca bruta
-class ForcaBruta {
-
-    // Aqui iremos verificar se a var possivelRota passada como parametro possui
-    // custo mais vantajoso com o atual,
-    // em caso positivo, entao iremos montar uma nova var melhorRota e um novo var
-    // melhorCusto.
-    private void melhorCaminho(int[][] grafo, Rota[] melhorRota, int melhorCusto, int[] possivelRota) {
-
-        // Cidades da melhor rota
-        int cidadeA, cidadeB;
-
-        // Custo total da melhor rota
-        int custoTotal = 0;
-
-        // Armazena a sequencia de cidades
-        // Indice -> cidade em questao
-        // Conteudo -> prox cidade da rota
-        int[] proxDaRota;
-
-        proxDaRota = new int[melhorRota.length];
-
-        // Aqui montamos uma rota com a possivelRota
-        cidadeA = 0;
-        cidadeB = possivelRota[1];
-        custoTotal = grafo[cidadeA][cidadeB];
-        proxDaRota[cidadeA] = cidadeB;
-
-        for (int i = 2; i < melhorRota.length; i++) {
-            cidadeA = cidadeB;
-            cidadeB = possivelRota[i];
-            custoTotal += grafo[cidadeA][cidadeB]; // calcula custo parcial da rota
-            proxDaRota[cidadeA] = cidadeB; // armazena rota fornecida pela possivelRota
-        }
-
-        proxDaRota[cidadeB] = 0; // completa o ciclo da viagem
-        custoTotal += grafo[cidadeB][0]; // custo total da rota
-
-        // procura pelo menor custo
-        if (custoTotal < melhorCusto) {
-            melhorCusto = custoTotal;
-            cidadeB = 0;
-            for (int i = 0; i < melhorRota.length; i++) { // aqui guardo a melhor rota
-                cidadeA = cidadeB;
-                cidadeB = proxDaRota[cidadeA];
-                melhorRota[i].cidadeA = cidadeA;
-                melhorRota[i].cidadeB = cidadeB;
-                melhorRota[i].custo = grafo[cidadeA][cidadeB];
-            }
-        }
-    }
-
-    // Aqui geramos os possiveis caminhos entre a cidade zero e as demais envolvidas
-    // na busca
-    // armazenando-as no vetor possivelRota, um por vez, e a cada permutacao gerada,
-    // chama o metodo
-    // melhor caminho em que escolhe o caminho de menor custo
-    // CÓDIGO ADAPTADO DE "Algorithms in C" (Robert Sedgewick), página 624.
-    private void permutacaoForcaBruta(int[] possivelRota, int[][] grafo, Rota[] melhorRota, int melhorCusto,
-            int controle, int k) {
-
-        possivelRota[k] = ++controle;
-
-        if (controle == (melhorRota.length - 1)) { // verifica se o caminho gerado e melhor
-            melhorCaminho(grafo, melhorRota, melhorCusto, possivelRota);
-        } else {
-            for (int i = 1; i < melhorRota.length; i++) {
-                if (possivelRota[i] == 0) {
-                    permutacaoForcaBruta(possivelRota, grafo, melhorRota, melhorCusto, controle, i);
-                }
-            }
-        }
-        controle--;
-        possivelRota[k] = 0;
-    }
-
-    // Aqui geramos possiveis caminhos entre a cidade zero e todas as outras
-    // envolvidas na rota da viagem do
-    // problema caixeiro viajante e escolhemos a melhor entre todas as possiveis,
-    // sempre gerando
-    // uma solucao otima
-    public void forcaBruta(int[] possivelRota, int[][] grafo, Rota[] melhorRota, int melhorCusto) {
-
-        int controle = -1;
-        melhorCusto = Integer.MAX_VALUE;
-
-        // aqui criamos rotas
-        for (int i = 0; i < melhorRota.length; i++) {
-            melhorRota[i] = new Rota();
-        }
-
-        // gera os caminhos possiveis e escolhe o melhor, de maneira recursiva
-        permutacaoForcaBruta(possivelRota, grafo, melhorRota, melhorCusto, controle, 1);
-    }
-
-    // Aqui imprimimos o melhor caminho obtido
-    public void imprimeCaminho(Rota[] melhorRota) {
-        int custoTotal = 0;
-        System.out.println("O melhor caminho obtido: \n");
-        System.out.println("          CidadeA            CidadeB             Custo ");
-
-        for (Rota melhorRota1 : melhorRota) {
-            System.out.println("              " + melhorRota1.cidadeA + "                  " + melhorRota1.cidadeB
-                    + "                " + melhorRota1.custo);
-            custoTotal += melhorRota1.custo;
-        }
-        System.out.println("\nCusto para a viagem do caxeiro viajante: " + custoTotal);
-        System.out.println();
-    }
-
-}
-
-// Aqui criaremos uma classe Rota que armazenara uma melhor rota
-// funciona como se fosse uma struct
-class Rota {
-
-    public int cidadeA;
-    public int cidadeB;
-    public int custo;
 
 }
