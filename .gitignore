@@ -1,7 +1,7 @@
-/build/
-/nbproject/private/private.properties
-/nbproject/private/private.properties
+TravellingSalesman/build/
+TravellingSalesman/nbproject/private/private.properties
+TravellingSalesman/nbproject/private/private.properties
 *.properties
 
-/nbproject/private/private.xml
-/dist/
+TravellingSalesman/nbproject/private/private.xml
+TravellingSalesman/dist/
