@@ -5,17 +5,17 @@ public class Heuristics extends Graphs {
     private final int vertices;
     private final int[] verticeConhecido;
     private final int[] verticePai;
+    private int custoTotal;
 
     public Heuristics(int vertices) {
         super(vertices);
         this.vertices = vertices;
         verticeConhecido = new int[vertices];
         verticePai = new int[vertices];
+        custoTotal = 0;
     }
-    
-    
 
-    private void guloso(int verticeInicial) {
+    private void guloso(int origem, int verticeInicial) {
         int peso = Integer.MAX_VALUE;
         int proxVertice = verticeInicial;
         verticeConhecido[verticeInicial] = 1;
@@ -28,7 +28,10 @@ public class Heuristics extends Graphs {
         
         if (proxVertice != verticeInicial) {
             verticePai[proxVertice] = verticeInicial;
-            guloso(proxVertice);
+            custoTotal += super.getPeso(verticeInicial, proxVertice);
+            guloso(origem, proxVertice);
+        } else {
+            custoTotal += super.getPeso(verticeInicial, origem);
         }
     }
 
@@ -37,11 +40,17 @@ public class Heuristics extends Graphs {
             verticeConhecido[i] = 0;
             verticePai[i] = -1;
         }
+        custoTotal = 0;
 
-        guloso(cidadeInicial);
+        guloso(cidadeInicial, cidadeInicial);
     }
 
     public int[] getVerticePai() {
         return verticePai;
     }
+    
+    public int getCustoTotal() {
+        return custoTotal;
+    }
+    
 }

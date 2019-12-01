@@ -13,10 +13,14 @@ public class TravellingSalesmanProblem {
 
         int[] caminho = graph.getVerticePai();
 
+        System.out.println("Vertice Pai:");
         for (int i = 0; i < caminho.length; i++) {
             System.out.print(caminho[i] + " ");
         }
         System.out.println("");
+        
+        int custoTotal = graph.getCustoTotal();
+        System.out.println("Melhor Custo: " + custoTotal);
 
     }
     
