@@ -7,7 +7,7 @@ import java.io.IOException;
 public class TravellingSalesmanProblem {
 
     public static void main(String[] args) {
-        Heuristics graph = readArqSup(args[0]);
+        Heuristics graph = readArq(args[0]);
         int cidadeInicial = 0;
         graph.iniciaGuloso(cidadeInicial);
 
@@ -19,21 +19,47 @@ public class TravellingSalesmanProblem {
         System.out.println("");
 
     }
-
-    public static Heuristics readArqInf(String arg) {
+    
+    public static Heuristics readArq(String arg) {
         try {
             FileReader arq = new FileReader(arg);
             BufferedReader lerArq = new BufferedReader(arq);
-            int vertices;
+            int vertices = 0;
 
             String linha = lerArq.readLine();
-            vertices = Integer.parseInt(linha.split(" ")[0]);
+            String format = new String();
+            
+            while(!linha.equals("EDGE_WEIGHT_SECTION")){
+                if (linha.split(":")[0].replace(" ", "").equals("DIMENSION")) {
+                    vertices = Integer.parseInt(linha.split(":")[1].replace(" ", ""));
+                }
+                if (linha.split(":")[0].replace(" ", "").equals("EDGE_WEIGHT_FORMAT")) {
+                    format = linha.split(":")[1].replace(" ", "");
+                }
+                linha = lerArq.readLine();
+            }
+            //System.out.println(vertices + "-" + format);
+            
+            if (format.equals("UPPER_DIAG_ROW")) {
+                return readArqSup(arq, vertices, lerArq);
+            } else {
+                return readArqInf(arq, vertices, lerArq);
+            }
+            
+        } catch (IOException e) {
+            System.err.printf("Erro na abertura do arquivo: %s.\n",
+                    e.getMessage());
+            return null;
+        }
+    }
 
+    public static Heuristics readArqInf(FileReader arq, int vertices, BufferedReader lerArq) {
+        try {
+            String linha = lerArq.readLine();
             Heuristics grafo = new Heuristics(vertices);
-            linha = lerArq.readLine();
 
             int row = 0;
-            while (linha != null) {
+            while (!linha.equals("DISPLAY_DATA_SECTION")) {
                 for (int column = 0; column <= row; column++) {
                     grafo.insereArestaNaoOrientada(row, column, Integer.parseInt(linha.split(" ")[column]));
                     //System.out.print(linha.split(" ")[column] + " ");
@@ -42,6 +68,7 @@ public class TravellingSalesmanProblem {
                 row++;
                 linha = lerArq.readLine(); // lê da segunda até a última linha
             }
+            
             arq.close();
             return grafo;
         } catch (IOException e) {
@@ -51,19 +78,11 @@ public class TravellingSalesmanProblem {
         }
     }
 
-    public static Heuristics readArqSup(String arg) {
+    public static Heuristics readArqSup(FileReader arq, int vertices, BufferedReader lerArq) {
         try {
-            FileReader arq = new FileReader(arg);
-            BufferedReader lerArq = new BufferedReader(arq);
-            int vertices;
-
             String linha = lerArq.readLine();
-            vertices = Integer.parseInt(linha.split(" ")[0]);
-            System.out.println(vertices);
-
             Heuristics grafo = new Heuristics(vertices);
-            linha = lerArq.readLine();
-
+            
             int row = 0;
             int aux = 0;
             int param = 16; //geralmente cada linha tem 16 numeros
