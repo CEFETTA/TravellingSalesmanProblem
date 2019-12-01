@@ -12,8 +12,10 @@ public class Heuristics extends Graphs {
         verticeConhecido = new int[vertices];
         verticePai = new int[vertices];
     }
+    
+    
 
-    public void guloso(int verticeInicial) {
+    private void guloso(int verticeInicial) {
         int peso = Integer.MAX_VALUE;
         int proxVertice = verticeInicial;
         verticeConhecido[verticeInicial] = 1;
