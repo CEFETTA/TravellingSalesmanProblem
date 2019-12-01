@@ -1,4 +1,7 @@
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 public class ParamCorte {
@@ -83,8 +86,8 @@ class ForcaBruta {
             cidadesExploradas[i] = 0;
         }
 
-        preencheGrafo(grafo);
-
+        //preencheGrafoRandom(grafo);
+        readArqSup("");
     }
 
     //Apenas uma chamada
@@ -179,7 +182,7 @@ class ForcaBruta {
 
 
     //Aqui preenchemos um grafo passado como parametro
-    public void preencheGrafo(int [][] grafo) {
+    public void preencheGrafoRandom(int [][] grafo) {
 
         //Gerador de numeros aleatorios
         Random gerador = new Random();
@@ -197,6 +200,81 @@ class ForcaBruta {
                     grafo[i][j] = grafo[j][i];
                 }
             }
+        }
+    }
+
+    public void readArqSup(String arg) {
+        try {
+            FileReader arq = new FileReader(arg);
+            BufferedReader lerArq = new BufferedReader(arq);
+            int vertices;
+
+            String linha = lerArq.readLine();
+            vertices = Integer.parseInt(linha.split(" ")[0]);
+            System.out.println(vertices);
+
+            linha = lerArq.readLine();
+
+            int row = 0;
+            int aux = 0;
+            int param = 16; //geralmente cada linha tem 16 numeros
+            int column;
+            while (row<vertices) {
+                for (column = row; column < vertices; column++) { //triang. superior
+                    this.grafo[row][column] =  Integer.parseInt(linha.split(" ")[aux+1]);
+                    this.grafo[column][row] =  Integer.parseInt(linha.split(" ")[aux+1]);
+
+                    //System.out.print(linha.split(" ")[aux+1] + " ");
+
+                    if (linha.split(" ")[aux+1].equals("0")) { //quando tem numero 0 ele nao conta
+                        param++;
+                    }
+
+                    aux++;
+
+                    if (aux == param) { //quando chegar no parametro le a proxima linha
+                        linha = lerArq.readLine();
+                        aux = 0;
+                        param = 16;
+                    }
+                }
+                //System.out.println("----------------------"+row);
+                row++;
+            }
+            arq.close();
+        } catch (IOException e) {
+            System.err.printf("Erro na abertura do arquivo: %s.\n",
+                    e.getMessage());
+        }
+    }
+
+    public void readArqInf(String arg) {
+        try {
+            FileReader arq = new FileReader(arg);
+            BufferedReader lerArq = new BufferedReader(arq);
+            int vertices;
+
+            String linha = lerArq.readLine();
+            vertices = Integer.parseInt(linha.split(" ")[0]);
+
+
+            linha = lerArq.readLine();
+
+            int row = 0;
+            while (linha != null) {
+                for (int column = 0; column <= row; column++) {
+                    grafo[row][column] = Integer.parseInt(linha.split(" ")[column]);
+                    grafo[column][row] = Integer.parseInt(linha.split(" ")[column]);
+                    //System.out.print(linha.split(" ")[column] + " ");
+                }
+                //System.out.println("");
+                row++;
+                linha = lerArq.readLine(); // lê da segunda até a última linha
+            }
+            arq.close();
+        } catch (IOException e) {
+            System.err.printf("Erro na abertura do arquivo: %s.\n",
+                    e.getMessage());
         }
     }
 
