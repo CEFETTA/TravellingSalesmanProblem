@@ -13,13 +13,11 @@ public class ParamCorte {
         System.out.println("Qual o valor de corte?");
         int cut = scan.nextInt();
 
-        //Aqui instanciamos de maneira automatica
-        ForcaBruta forcaBrutaN[] = new ForcaBruta[15];
+        int size = getSize("./grafos/si535.tsp");
 
         //Aqui instanciamos o forca bruta de acordo com o numero de cidades
-        for (int i = 0; i < 15; i++) {
-            forcaBrutaN[i] = new ForcaBruta(i, cut);
-        }
+        ForcaBruta forcaBrutaN = new ForcaBruta(size, cut, "./grafos/si535.tsp");
+
 
         //Aqui alteramos qual instancia queremos testar
         int n = 13;
@@ -27,15 +25,36 @@ public class ParamCorte {
         long inicio = System.currentTimeMillis();
 
         //Aqui fazemos as chamadas dos algoritmos
-        forcaBrutaN[n].AlgoritmoForcaBruta();
-        forcaBrutaN[n].imprimeGrafo();
-        forcaBrutaN[n].imprimeMelhorRota();
+        forcaBrutaN.AlgoritmoForcaBruta();
+        //forcaBrutaN.imprimeGrafo();
+        forcaBrutaN.imprimeMelhorRota();
 
         long fim = System.currentTimeMillis();
 
         System.out.println("\nTempo em Ms: " + (fim - inicio));
         System.out.println("");
 
+    }
+
+    public static int getSize(String arg){
+        try{
+            FileReader arq = new FileReader(arg);
+            BufferedReader lerArq = new BufferedReader(arq);
+            int vertices;
+
+            String linha;
+
+            while(!(linha = lerArq.readLine()).contains("DIMENSION:")){}
+
+
+            vertices = Integer.parseInt(linha.split(" ")[1]);
+            System.out.println(vertices);
+
+            return vertices;
+        }catch (IOException e){
+            System.out.println("ERROR> "+ e.getMessage());
+        }
+        return 0;
     }
 
 }
@@ -70,12 +89,12 @@ class ForcaBruta {
     private int cut;
 
     //Construtor onde inicializamos todas variaveis
-    public ForcaBruta(int numCidades, int cut) {
+    public ForcaBruta(int numCidades, int cut, String arg) {
 
         this.cut = cut;
 
         this.numCidades = numCidades;
-        this.grafo = new int [numCidades][numCidades];
+        this.grafo = readArqSup(arg);
         this.possivelRota = new int[numCidades];
         this.cidadesExploradas = new int[numCidades];
         this.melhorRota = new int[numCidades];
@@ -87,7 +106,6 @@ class ForcaBruta {
         }
 
         //preencheGrafoRandom(grafo);
-        readArqSup("");
     }
 
     //Apenas uma chamada
@@ -113,7 +131,7 @@ class ForcaBruta {
                     melhorRota[j] = possivelRota[j];
                 }
             }
-            if(custoCiclo <= this.cut){
+            if(custoCiclo < this.cut){
                 menorCusto = custoCiclo;
                 for (int j = 0; j < numCidades; j++) {
                     melhorRota[j] = possivelRota[j];
@@ -203,15 +221,26 @@ class ForcaBruta {
         }
     }
 
-    public void readArqSup(String arg) {
+    public int[][] readArqSup(String arg) {
         try {
             FileReader arq = new FileReader(arg);
             BufferedReader lerArq = new BufferedReader(arq);
             int vertices;
 
-            String linha = lerArq.readLine();
-            vertices = Integer.parseInt(linha.split(" ")[0]);
-            System.out.println(vertices);
+            String linha;
+
+            vertices = this.numCidades;
+
+            int[][] grafo = new int[vertices][vertices];
+
+            while(!(linha = lerArq.readLine()).contains("EDGE_WEIGHT_FORMAT:")){}
+
+            if(linha.split(" ")[1].equalsIgnoreCase("LOWER_DIAG_ROW")){
+                arq.close();
+                return readArqInf(arg, vertices);
+            }else{
+                while(!(linha = lerArq.readLine()).contains("EDGE_WEIGHT_SECTION")){}
+            }
 
             linha = lerArq.readLine();
 
@@ -221,8 +250,8 @@ class ForcaBruta {
             int column;
             while (row<vertices) {
                 for (column = row; column < vertices; column++) { //triang. superior
-                    this.grafo[row][column] =  Integer.parseInt(linha.split(" ")[aux+1]);
-                    this.grafo[column][row] =  Integer.parseInt(linha.split(" ")[aux+1]);
+                    grafo[row][column] =  Integer.parseInt(linha.split(" ")[aux+1]);
+                    grafo[column][row] =  Integer.parseInt(linha.split(" ")[aux+1]);
 
                     //System.out.print(linha.split(" ")[aux+1] + " ");
 
@@ -242,21 +271,24 @@ class ForcaBruta {
                 row++;
             }
             arq.close();
+            return grafo;
         } catch (IOException e) {
             System.err.printf("Erro na abertura do arquivo: %s.\n",
                     e.getMessage());
         }
+        return null;
     }
 
-    public void readArqInf(String arg) {
+    public int[][] readArqInf(String arg, int vertices) {
         try {
             FileReader arq = new FileReader(arg);
             BufferedReader lerArq = new BufferedReader(arq);
-            int vertices;
 
-            String linha = lerArq.readLine();
-            vertices = Integer.parseInt(linha.split(" ")[0]);
+            int[][]grafo = new int[vertices][vertices];
 
+            String linha;
+
+            while(!(linha = lerArq.readLine()).contains("EDGE_WEIGHT_SECTION")){}
 
             linha = lerArq.readLine();
 
@@ -272,10 +304,12 @@ class ForcaBruta {
                 linha = lerArq.readLine(); // lê da segunda até a última linha
             }
             arq.close();
+            return grafo;
         } catch (IOException e) {
             System.err.printf("Erro na abertura do arquivo: %s.\n",
                     e.getMessage());
         }
+        return null;
     }
 
 }
